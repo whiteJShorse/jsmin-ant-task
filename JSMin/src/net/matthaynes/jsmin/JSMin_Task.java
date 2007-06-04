@@ -95,7 +95,7 @@ public class JSMin_Task extends Task {
             	FileSet fs = (FileSet)filesets.elementAt(i);
             	
             	// Ummm....?
-            	DirectoryScanner ds = fs.getDirectoryScanner(project);
+            	DirectoryScanner ds = fs.getDirectoryScanner(getProject());
 
             	// Get base directory from fileset
             	File dir = ds.getBasedir();
@@ -116,7 +116,7 @@ public class JSMin_Task extends Task {
     		
         // If no srcfile or fileset passed through, throw ant error
     	} else {
-    		throw new BuildException("You must specify a srcfile attribute or a fileset child element", location);    		
+    		throw new BuildException("You must specify a srcfile attribute or a fileset child element", getLocation());    		
     	}
         
     }
