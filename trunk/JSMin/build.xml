@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jsmin" default="main" basedir=".">
+	
+    <property name="src.dir" value="src"/>
+    <property name="classes.dir" value="classes"/>	
+   
+	<target name="main" depends="clean,jar" description="Builds project">
+		<echo>Building Projects</echo>
+	</target>
+	
+    <target name="compile" depends="clean" description="Compiles the Task">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" />
+    </target>
+	
+	<target name="jar" description="JARs the Task" depends="compile">
+	        <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}"/>
+	</target>	
+
+    <target name="clean" description="Delete all generated files">
+        <delete dir="${classes.dir}" failonerror="false"/>
+        <delete file="${ant.project.name}.jar"/>
+    </target>
+	
+    <target name="use" description="Use the Task" depends="jar">
+        <taskdef name="jsmin"
+                 classname="net.matthaynes.jsmin.JSMin_Task"
+                 classpath="${ant.project.name}.jar"/>
+
+        <jsmin>
+			<fileset  dir="/Users/matth/Sites/experimental/unit_circle/js/" includes="**/*.js"/>
+        </jsmin>    	
+    	
+
+    </target>
+    
+</project>
+
