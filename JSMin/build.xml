@@ -5,13 +5,13 @@
     <property name="src.dir" value="src"/>
     <property name="classes.dir" value="classes"/>	
    
-	<target name="main" depends="clean,jar" description="Builds project">
+	<target name="main" depends="clean,use" description="Builds project">
 		<echo>Building Projects</echo>
 	</target>
 	
     <target name="compile" depends="clean" description="Compiles the Task">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" />
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" deprecation="on"/>
     </target>
 	
 	<target name="jar" description="JARs the Task" depends="compile">
