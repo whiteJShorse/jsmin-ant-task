@@ -15,7 +15,6 @@
  *       </jsmin>    
  * 
  * TO DO:
- * 		Fix warnings from javac (deprecated API, unchecked operations).
  * 		Improve javadoc.
  */
 
@@ -35,7 +34,7 @@ import java.io.*;
 
 public class JSMin_Task extends Task {
 
-	Vector filesets = new Vector();	
+	Vector<FileSet> filesets = new Vector<FileSet>();	
 	String srcfile;
 	
 	/**
