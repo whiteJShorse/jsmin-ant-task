@@ -5,13 +5,13 @@
     <property name="src.dir" value="src"/>
     <property name="classes.dir" value="classes"/>	
    
-	<target name="main" depends="clean,use" description="Builds project">
+	<target name="main" depends="jar" description="Builds project">
 		<echo>Building Projects</echo>
 	</target>
 	
     <target name="compile" depends="clean" description="Compiles the Task">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" deprecation="on"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" />
     </target>
 	
 	<target name="jar" description="JARs the Task" depends="compile">
@@ -29,9 +29,8 @@
                  classpath="${ant.project.name}.jar"/>
 
         <jsmin>
-			<fileset  dir="/Users/matth/Sites/experimental/unit_circle/js/" includes="**/*.js"/>
+			<fileset dir="./somjsdirectory/" includes="**/*.js"/>
         </jsmin>    	
-    	
 
     </target>
     
