@@ -34,7 +34,7 @@ import java.io.*;
 
 public class JSMin_Task extends Task {
 
-	Vector<FileSet> filesets = new Vector<FileSet>();	
+	Vector filesets = new Vector();	
 	String srcfile;
 	
 	/**
