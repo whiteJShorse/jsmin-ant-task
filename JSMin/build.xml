@@ -29,7 +29,7 @@
                  classpath="${ant.project.name}.jar"/>
 
         <jsmin>
-			<fileset dir="./somjsdirectory/" includes="**/*.js"/>
+			<fileset dir="./somejsdirectory/" includes="**/*.js"/>
         </jsmin>    	
 
     </target>
