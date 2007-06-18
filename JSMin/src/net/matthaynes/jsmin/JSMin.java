@@ -287,8 +287,6 @@ public class JSMin {
         // Connect print stream to the output stream
         p = new PrintStream( out );
 
-        p.println ("This is written to a file");
-
         p.close();		
 	}
 
