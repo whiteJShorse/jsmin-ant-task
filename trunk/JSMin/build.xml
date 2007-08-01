@@ -30,7 +30,7 @@
 
     	<copy file="./testjs/common.js.bak" tofile="./testjs/common.js" />
     	
-        <jsmin destdir="./somedir/">
+        <jsmin destdir="./somedir/" suffix="true">
 			<fileset dir="./testjs/" includes="**/*.js"/>
         </jsmin>    	
 
