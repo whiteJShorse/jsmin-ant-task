@@ -1,21 +1,18 @@
-/*
- * JSMin_Task.java
+/** 
+ *  
+ * JSMin_Task is ant Ant interface to the JSMin.java program.
  * 
- * MHAYNES 03/06/2007
- * 
- * Ant task for the JSMin class.
- * 
- * USAGE:
+ * Usage:
  *  	<taskdef name="jsmin"
  *  		classname="net.matthaynes.jsmin.JSMin_Task" 
  *  		classpath="jsmin.jar"/>
  *
  *  	<jsmin>
  *			<fileset  dir="js_dir/" includes="*.js"/>
- *       </jsmin>    
+ *      </jsmin>    
  * 
- * TO DO:
- * 		Improve javadoc.
+ * Updated 1st August 2007
+ * @author Matthew Haynes
  */
 
 // Part of this package
@@ -36,6 +33,8 @@ public class JSMin_Task extends Task {
 
 	Vector filesets = new Vector();	
 	String srcfile;
+	String destdir;
+	boolean suffix;
 	
 	/**
 	 * Receives a nested fileset from the ant task 
@@ -48,6 +47,14 @@ public class JSMin_Task extends Task {
 	}	
 	
 	/**
+	 * Receives the destdir attribute from the ant task.
+	 * @param destdir 
+	 */
+	public void setDestdir (String destdir) {
+		this.destdir = destdir;
+	}
+	
+	/**
 	 * Receives the srcfile attribute from the ant task
 	 * @param srcfiles
 	 */
@@ -56,23 +63,111 @@ public class JSMin_Task extends Task {
     }
     
     /**
-     * Calls the JSMin class using the file parameter
-     * @param file The file for the JSMin class to parse
+     * Receives the suffix attribute from the ant task
+     * @param suffix
+     */
+    public void setSuffix(boolean suffix) {
+    	this.suffix = suffix;
+    }
+    
+    /**
+     * Calls the JSMin class using the file parameter. First outputs to a temp file and then
+     * renames this to the file specified in getOutputFile() method.
+     * @param file The name of the js file for the JSMin class to parse.
      */
     public void callJsMin(String file) {
-    	log("Minimizing " + file);
     	
-    	// Construct name of ouput file, just add th .min before the last .
-    	String outputFile = file.substring(0,file.lastIndexOf("."));
-    	outputFile = outputFile + ".min";
-    	outputFile = outputFile + file.substring(file.lastIndexOf("."), file.length());
-
-    	// Call JSMin class main method, pass through input and output file
-    	String[] arguments = new String[] {file, outputFile};
-    	JSMin.main(arguments);
+    	try {
+    		
+        	// Declare src file
+        	File srcFile = new File(file);
+        	
+        	// Declare output file
+        	File output = new File (getOutputDirectory(srcFile),getOutputFileName(srcFile));
+        	
+        	log("Minimizing " + output.getAbsolutePath());
+        	
+        	// Declare temp file
+        	File tmpFile = File.createTempFile("JSMinAntTask","tmp");      		
+        	
+        	// Invoke JSMin, passing params through as file input and output streams 
+        	JSMin jsmin = new JSMin(new FileInputStream(srcFile), new FileOutputStream(tmpFile));
+    		jsmin.jsmin();
+    		
+    		// Rename temp file to output file.
+    		tmpFile.renameTo(output);
+    		
+    	} catch(Exception e) {
+    		
+    		throw new BuildException(e);
+    		
+    	}
     	
     }
 
+    /**
+     * Returns the output filename, adds .min.js as suffix attribute is set to true.
+     * @param file The source file.
+     * @return outputFile The output filename.
+     */
+    public String getOutputFileName (File file) {
+    	
+    	// Get output file name....    	
+    	String outputFile; 
+    	String inputFile = file.getName();
+    	
+    	if (this.suffix == true) {
+    		
+        	// Construct name of ouput file, just add th .min before the last .
+        	outputFile = inputFile.substring(0,inputFile.lastIndexOf("."));
+        	outputFile = outputFile + ".min";  	
+        	outputFile = outputFile + inputFile.substring(inputFile.lastIndexOf("."), inputFile.length());
+    		
+    	}  else {
+    		outputFile = inputFile;
+    	}
+    	
+    	return outputFile;
+    }
+    	
+    /**
+     * Returns the output directory, uses destdir if specified, creating it if doesn't already exist.
+     * @param file The source file.
+     * @return outputDirectory The output directory.
+     */
+    public File getOutputDirectory (File file) {
+    	    	
+        File outputDirectory;	
+    	
+        // If destdir has been set then use it
+    	if (this.destdir != null) {
+    		
+    		outputDirectory = new File(this.destdir);
+    		
+    		// If destdir doesn't exist then create it...
+    		if (!outputDirectory.isDirectory()) {
+    			
+    			try {
+
+    				// Make directory
+    				outputDirectory.mkdirs();
+    			
+    			} catch(Exception e) {
+    			
+    				throw new BuildException(e);
+    			
+    			}
+    		}
+    		
+    	} else {
+
+    		// Use source directory...
+    		outputDirectory = new File(file.getParent());
+    	}
+    	
+    	return outputDirectory;
+    }
+    
     /**
      * Executes the task
      */
