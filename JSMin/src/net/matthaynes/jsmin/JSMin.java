@@ -1,13 +1,3 @@
-/* MHAYNES 03/06/2007
- * 
- * Reworked this file so it takes two params, input and output files.
- * Now uses FileOutputStream as opposed to OutputStream
- * 
- * Original file outputted to stdout, had to use the > operator
- * on the java commandline to redirect stdout to file. Kind of made
- * things difficult when you want to call this class from another.
- * 
- */
 
 /*
  * JSMin.java 2006-02-13
@@ -49,29 +39,26 @@
 
 package net.matthaynes.jsmin;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PushbackInputStream;
 
 
 public class JSMin {
 	private static final int EOF = -1;
 
 	private PushbackInputStream in;
-	private FileOutputStream out;
-	private PrintStream p;
+	private OutputStream out;
 
 	private int theA;
 	private int theB;
 	
-	public JSMin(InputStream in, String outputFile) {
+	public JSMin(InputStream in, OutputStream out) {
 		this.in = new PushbackInputStream(in);
-		
-		// Direct output to file specified as 2nd argument
-		try {
-			out = new FileOutputStream(outputFile);
-			System.out.println("Saving: " + outputFile);
-		} catch (Exception e) {
-            System.err.println ("Error writing to file");
-		}
+		this.out = out;
 	}
 
 	/**
@@ -107,6 +94,8 @@ public class JSMin {
 		return ' ';
 	}
 
+	
+	
 	/**
 	 * Get the next character without getting it.
 	 */
@@ -282,12 +271,7 @@ public class JSMin {
 				}
 			}
 		}
-		// out.flush();
-
-        // Connect print stream to the output stream
-        p = new PrintStream( out );
-
-        p.close();		
+		out.flush();
 	}
 
 	class UnterminatedCommentException extends Exception {
@@ -301,7 +285,7 @@ public class JSMin {
 
 	public static void main(String arg[]) {
 		try {
-			JSMin jsmin = new JSMin(new FileInputStream(arg[0]), arg[1]);
+			JSMin jsmin = new JSMin(new FileInputStream(arg[0]), System.out);
 			jsmin.jsmin();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -317,4 +301,6 @@ public class JSMin {
 			e.printStackTrace();
 		}
 	}
+
+
 }
