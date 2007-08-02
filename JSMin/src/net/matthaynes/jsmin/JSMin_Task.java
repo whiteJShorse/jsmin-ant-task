@@ -90,12 +90,20 @@ public class JSMin_Task extends Task {
         	// Declare temp file
         	File tmpFile = File.createTempFile("JSMinAntTask","tmp");      		
         	
+        	// Declare input / output streams
+        	FileInputStream inputStream = new FileInputStream(srcFile);
+        	FileOutputStream outputStream = new FileOutputStream(tmpFile);
+        	
         	// Invoke JSMin, passing params through as file input and output streams 
-        	JSMin jsmin = new JSMin(new FileInputStream(srcFile), new FileOutputStream(tmpFile));
+        	JSMin jsmin = new JSMin(inputStream, outputStream);
     		jsmin.jsmin();
     		
     		// Rename temp file to output file.
     		tmpFile.renameTo(output);
+    		
+    		// Close file streams
+    		inputStream.close();
+    		outputStream.close();
     		
     	} catch(Exception e) {
     		
