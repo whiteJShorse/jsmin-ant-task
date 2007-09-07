@@ -1,3 +1,23 @@
+/**
+ * License Agreement.
+ *
+ * Ajax4jsf 1.1 - Natural Ajax for Java Server Faces (JSF)
+ *
+ * Copyright (C) 2007 Exadel, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
 
 /*
  * JSMin.java 2006-02-13
@@ -38,13 +58,14 @@
  */
 
 package net.matthaynes.jsmin;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
+
+
 
 
 public class JSMin {
@@ -56,9 +77,15 @@ public class JSMin {
 	private int theA;
 	private int theB;
 	
+	private int line;
+	
+	private int column;
+	
 	public JSMin(InputStream in, OutputStream out) {
 		this.in = new PushbackInputStream(in);
 		this.out = out;
+		this.line = 0;
+		this.column = 0;
 	}
 
 	/**
@@ -82,12 +109,20 @@ public class JSMin {
 	 */
 	int get() throws IOException {
 		int c = in.read();
+		
+		if(c == '\n'){
+			line++;
+			column = 0;
+		} else {
+			column++;
+		}
 
 		if (c >= ' ' || c == '\n' || c == EOF) {
 			return c;
 		}
 
 		if (c == '\r') {
+			column = 0;
 			return '\n';
 		}
 		
@@ -132,7 +167,7 @@ public class JSMin {
 						}
 						break;
 					case EOF:
-						throw new UnterminatedCommentException();
+						throw new UnterminatedCommentException(line,column);
 					}
 				}
 
@@ -168,7 +203,7 @@ public class JSMin {
 						break;
 					}
 					if (theA <= '\n') {
-						throw new UnterminatedStringLiteralException();
+						throw new UnterminatedStringLiteralException(line,column);
 					}
 					if (theA == '\\') {
 						out.write(theA);
@@ -179,7 +214,7 @@ public class JSMin {
 			
 		case 3:
 			theB = next();
-			if (theB == '/' && (theA == '(' || theA == ',' || theA == '=')) {
+			if (theB == '/' && (theA == '(' || theA == ',' || theA == '='|| theA == ':')) {
 				out.write(theA);
 				out.write(theB);
 				for (;;) {
@@ -190,7 +225,7 @@ public class JSMin {
 						out.write(theA);
 						theA = get();
 					} else if (theA <= '\n') {
-						throw new UnterminatedRegExpLiteralException();
+						throw new UnterminatedRegExpLiteralException(line,column);
 					}
 					out.write(theA);
 				}
@@ -274,13 +309,22 @@ public class JSMin {
 		out.flush();
 	}
 
-	class UnterminatedCommentException extends Exception {
+	static class UnterminatedCommentException extends Exception {
+		public UnterminatedCommentException(int line,int column) {
+			super("Unterminated comment at line "+line+" and column "+column);
+		}
 	}
 
-	class UnterminatedStringLiteralException extends Exception {
+	static class UnterminatedStringLiteralException extends Exception {
+		public UnterminatedStringLiteralException(int line,int column) {
+			super("Unterminated string literal at line "+line+" and column "+column);
+		}
 	}
 
-	class UnterminatedRegExpLiteralException extends Exception {
+	static class UnterminatedRegExpLiteralException extends Exception {
+		public UnterminatedRegExpLiteralException(int line,int column) {
+			super("Unterminated regular expression at line "+line+" and column "+column);
+		}
 	}
 
 	public static void main(String arg[]) {
@@ -301,6 +345,7 @@ public class JSMin {
 			e.printStackTrace();
 		}
 	}
+
 
 
 }
