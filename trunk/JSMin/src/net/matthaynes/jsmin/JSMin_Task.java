@@ -35,6 +35,7 @@ public class JSMin_Task extends Task {
 	String srcfile;
 	String destdir;
 	boolean suffix;
+	boolean force = false;
 
 	/**
 	 * Receives a nested fileset from the ant task
@@ -53,6 +54,14 @@ public class JSMin_Task extends Task {
 	public void setDestdir (String destdir) {
 		this.destdir = destdir;
 	}
+
+    /**
+     * Receives the force attribute from the ant task
+     * @param force
+     */
+    public void setForce(boolean force) {
+    	this.force = force;
+    }	
 
 	/**
 	 * Receives the srcfile attribute from the ant task
@@ -85,8 +94,6 @@ public class JSMin_Task extends Task {
         	// Declare output file
         	File output = new File (getOutputDirectory(srcFile),getOutputFileName(srcFile));
 
-        	log("Minimizing " + output.getAbsolutePath());
-
         	// Declare temp file
         	File tmpFile = File.createTempFile("JSMinAntTask","tmp");
 
@@ -102,8 +109,11 @@ public class JSMin_Task extends Task {
     		inputStream.close();
     		outputStream.close();
 
-			// Rename temp file to output file.
-    		tmpFile.renameTo(output);
+			// Copy temp file to output file.
+    		copyFile(tmpFile,output);
+    		
+    		// Delete the temp file
+    		deleteFile(tmpFile);
 
     	} catch(Exception e) {
 
@@ -112,8 +122,49 @@ public class JSMin_Task extends Task {
     	}
 
     }
-
+    
     /**
+     * Copies one file for another, if global variable force==true
+     * @param src The source file to copy
+     * @param dst The destination file to copy to
+     */
+    public void copyFile (File src, File dst) throws IOException {
+    	
+    	if (dst.exists() && force == false) {
+    		
+    		log("Not Minimizing " + dst.getAbsolutePath() + ". File already exists, use the force attrbute to overwrite.");
+    		
+    	} else {
+    	
+	        InputStream in = new FileInputStream(src);
+	        OutputStream out = new FileOutputStream(dst);
+	    
+	        // Transfer bytes from in to out
+	        byte[] buf = new byte[1024];
+	        int len;
+	        
+	        while ((len = in.read(buf)) > 0) {
+	            out.write(buf, 0, len);
+	        }
+	        
+	        in.close();
+	        out.close();
+	        
+	        log("Minimizing " + dst.getAbsolutePath());
+    	}
+    }
+    
+    /**
+     * Deletes specified file
+     * @param file
+     */
+    public void deleteFile(File file) {
+    	
+    	file.delete();
+    	
+    }
+    
+   /**
      * Returns the output filename, adds .min.js as suffix attribute is set to true.
      * @param file The source file.
      * @return outputFile The output filename.
