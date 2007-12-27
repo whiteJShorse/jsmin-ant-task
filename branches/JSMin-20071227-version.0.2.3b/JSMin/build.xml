@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="jsmin" default="main" basedir=".">
-	
+
     <property name="src.dir" value="src"/>
     <property name="classes.dir" value="classes"/>
 	<property name="test.dir" value="test" />		
@@ -17,7 +17,7 @@
     </target>
 	
 	<target name="jar" description="JARs the Task" depends="compile">
-	    <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}"/>
+	    <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}" />
 	</target>	
 
     <target name="clean" description="Delete all generated files">
@@ -28,16 +28,14 @@
     </target>
 	
 	<target name="init-test" depends="jar">
-			<mkdir dir="${test.dir}" />
-			<mkdir dir="${output.dir}" />			
-	</target>
-	
-    <target name="test" description="Tests the Task" depends="init-test">
-	
+		
 		<taskdef name="jsmin"
-        	classname="net.matthaynes.jsmin.JSMin_Task"
-        	classpath="${ant.project.name}.jar"/>	
-
+	    	classname="net.matthaynes.jsmin.JSMin_Task"
+	    	classpath="${ant.project.name}.jar"/>
+		
+		<mkdir dir="${test.dir}" />
+		<mkdir dir="${output.dir}" />	
+	
     	<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/common/common.js" 
     		dest="${test.dir}/common.js" />
 			
@@ -49,26 +47,46 @@
     	
 		<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/popup/popup.js" 
     		dest="${test.dir}/popup.js" />
-			    	
-        <jsmin destdir="${output.dir}" suffix="true">
-			<fileset dir="${test.dir}" includes="**/*.js"/>
-        </jsmin>    	
-
-    </target>
-	
-    <target name="test-prototype" description="Tests the task against the prototype.js library" depends="init-test">
-	
-		<taskdef name="jsmin"
-        	classname="net.matthaynes.jsmin.JSMin_Task"
-        	classpath="${ant.project.name}.jar"/>
+		
 		
 		<get src="http://www.prototypejs.org/assets/2007/5/1/prototype.js" 
     		dest="${test.dir}/prototype.js" />
-    		
-    	<jsmin destdir="${output.dir}" suffix="true">
-			<fileset dir="${test.dir}" includes="**/*.js"/>
-        </jsmin>    	
+			
+	</target>
+	
+    <target name="test" description="Test fileset" depends="init-test, test-fileset, test-prototype, test-destfile, test-noforce, test-force" />
+	
+	<target name="test-fileset" >
+			    	
+        <jsmin destdir="${output.dir}" suffix="true">
+			<fileset dir="${test.dir}" includes="**/*.js" excludes="prototype.js"/>
+        </jsmin>    
 
+    </target>
+	
+	<target name="test-destfile">
+    	
+    	<jsmin srcfile="${test.dir}/popup.js" destfile="${output.dir}/test-destfile.js" />
+		
+	</target>
+	
+	<target name="test-noforce">
+    	
+		<jsmin srcfile="${test.dir}/popup.js" destfile="${test.dir}/popup.js" />		
+    	<jsmin srcfile="${test.dir}/popup.js" destfile="${output.dir}/test-destfile.js" />
+		
+	</target>
+	
+	<target name="test-force">
+    		
+    	<jsmin srcfile="${test.dir}/popup.js" destfile="${output.dir}/test-destfile.js" force="true" />
+		
+	</target>	
+	
+    <target name="test-prototype" description="Tests the task against the prototype.js library">
+    	
+    	<jsmin srcfile="${test.dir}/prototype.js" destfile="${output.dir}/prototype.js" />
+		
     </target>
     
 </project>
