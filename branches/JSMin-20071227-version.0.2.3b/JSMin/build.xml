@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jsmin" default="main" basedir=".">
+	
+    <property name="src.dir" value="src"/>
+    <property name="classes.dir" value="classes"/>
+	<property name="test.dir" value="test" />		
+	<property name="output.dir" value="output" />	
+	
+	<target name="main" depends="jar" description="Builds project">
+		<echo>Building Projects</echo>
+	</target>
+	
+    <target name="compile" depends="clean" description="Compiles the Task">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" />
+    </target>
+	
+	<target name="jar" description="JARs the Task" depends="compile">
+	    <jar destfile="${ant.project.name}.jar" basedir="${classes.dir}"/>
+	</target>	
+
+    <target name="clean" description="Delete all generated files">
+		<delete dir="${test.dir}" failonerror="false"/>
+		<delete dir="${output.dir}" failonerror="false"/>
+		<delete dir="${classes.dir}" failonerror="false"/>
+        <delete file="${ant.project.name}.jar"/>
+    </target>
+	
+	<target name="init-test" depends="jar">
+			<mkdir dir="${test.dir}" />
+			<mkdir dir="${output.dir}" />			
+	</target>
+	
+    <target name="test" description="Tests the Task" depends="init-test">
+	
+		<taskdef name="jsmin"
+        	classname="net.matthaynes.jsmin.JSMin_Task"
+        	classpath="${ant.project.name}.jar"/>	
+
+    	<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/common/common.js" 
+    		dest="${test.dir}/common.js" />
+			
+    	<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/scroller/scroller.js" 
+    		dest="${test.dir}/scroller.js" />
+			
+		<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/rss/rss.js" 
+    		dest="${test.dir}/rss.js" />
+    	
+		<get src="http://www.bbc.co.uk/ui/ide/1/js/site/eastenders/popup/popup.js" 
+    		dest="${test.dir}/popup.js" />
+			    	
+        <jsmin destdir="${output.dir}" suffix="true">
+			<fileset dir="${test.dir}" includes="**/*.js"/>
+        </jsmin>    	
+
+    </target>
+	
+    <target name="test-prototype" description="Tests the task against the prototype.js library" depends="init-test">
+	
+		<taskdef name="jsmin"
+        	classname="net.matthaynes.jsmin.JSMin_Task"
+        	classpath="${ant.project.name}.jar"/>
+		
+		<get src="http://www.prototypejs.org/assets/2007/5/1/prototype.js" 
+    		dest="${test.dir}/prototype.js" />
+    		
+    	<jsmin destdir="${output.dir}" suffix="true">
+			<fileset dir="${test.dir}" includes="**/*.js"/>
+        </jsmin>    	
+
+    </target>
+    
+</project>
+
