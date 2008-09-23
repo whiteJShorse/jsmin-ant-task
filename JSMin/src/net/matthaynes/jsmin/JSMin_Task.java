@@ -24,18 +24,23 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.util.FileUtils;
 
 import java.util.Vector;
 import java.io.*;
 
 
 public class JSMin_Task extends Task {
+	
+    private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
 
-	Vector filesets = new Vector();
-	String srcfile;
-	String destdir;
-	boolean suffix;
-	boolean force = false;
+	private Vector filesets = new Vector();
+	private File srcfile;
+	private File destdir;
+	private File destfile;
+	private String copyright;
+	private boolean suffix;
+	private boolean force = false;
 
 	/**
 	 * Receives a nested fileset from the ant task
@@ -48,11 +53,27 @@ public class JSMin_Task extends Task {
 	}
 
 	/**
+	 * Recieves copyright attribute from the ant task
+	 * @param copyright
+	 */
+	public void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+	
+	/**
 	 * Receives the destdir attribute from the ant task.
 	 * @param destdir
 	 */
-	public void setDestdir (String destdir) {
+	public void setDestdir (File destdir) {
 		this.destdir = destdir;
+	}
+
+	/**
+	 * Receives the destfile attribute from the ant task.
+	 * @param destfile
+	 */
+	public void setDestfile (File destfile) {
+		this.destfile = destfile;
 	}
 
     /**
@@ -67,7 +88,7 @@ public class JSMin_Task extends Task {
 	 * Receives the srcfile attribute from the ant task
 	 * @param srcfiles
 	 */
-    public void setSrcfile(String srcfile) {
+    public void setSrcfile(File srcfile) {
         this.srcfile = srcfile;
     }
 
@@ -84,36 +105,52 @@ public class JSMin_Task extends Task {
      * renames this to the file specified in getOutputFile() method.
      * @param file The name of the js file for the JSMin class to parse.
      */
-    public void callJsMin(String file) {
-
+    public void callJsMin(File srcFile, File outputFile) {
+    	
+    	File output;
+    	
+    	if (outputFile == null) {
+    		// Declare output file
+        	output = new File (getOutputDirectory(srcFile),getOutputFileName(srcFile));
+    	} else {
+    		output = outputFile;
+    	}
+    	    	
+    	//  If output file exists and is newer than source, and force is not set
+		if (FILE_UTILS.isUpToDate(srcFile, output, 0) & !this.force) {
+				log("Not minimizing " + output.getAbsolutePath() + " File exists and is up-to-date, use force attribute.");
+				return;
+		}
+    	
     	try {
 
-        	// Declare src file
-        	File srcFile = new File(file);
-
-        	// Declare output file
-        	File output = new File (getOutputDirectory(srcFile),getOutputFileName(srcFile));
-
         	// Declare temp file
-        	File tmpFile = File.createTempFile("JSMinAntTask","tmp");
+        	File tmpFile = FILE_UTILS.createTempFile("JSMinAntTask","tmp", null);
 
         	// Declare input / output streams
         	FileInputStream inputStream = new FileInputStream(srcFile);
         	FileOutputStream outputStream = new FileOutputStream(tmpFile);
 
+        	// Drop in copyright notice
+    		if (this.copyright != null) {
+    			String copyrightString = "/* " + this.copyright + " */";
+    			outputStream.write(copyrightString.getBytes());
+    		}
+        	
         	// Invoke JSMin, passing params through as file input and output streams
         	JSMin jsmin = new JSMin(inputStream, outputStream);
     		jsmin.jsmin();
-
+    		
     		// Close file streams
     		inputStream.close();
     		outputStream.close();
-
+    	
 			// Copy temp file to output file.
-    		copyFile(tmpFile,output);
-    		
+    		FILE_UTILS.copyFile(tmpFile, output, null, this.force);
+	        log("Minimizing " + output.getAbsolutePath());
+		
     		// Delete the temp file
-    		deleteFile(tmpFile);
+    		FILE_UTILS.delete(tmpFile);
 
     	} catch(Exception e) {
 
@@ -123,46 +160,6 @@ public class JSMin_Task extends Task {
 
     }
     
-    /**
-     * Copies one file for another, if global variable force==true
-     * @param src The source file to copy
-     * @param dst The destination file to copy to
-     */
-    public void copyFile (File src, File dst) throws IOException {
-    	
-    	if (dst.exists() && force == false) {
-    		
-    		log("Not Minimizing " + dst.getAbsolutePath() + ". File already exists, use the force attrbute to overwrite.");
-    		
-    	} else {
-    	
-	        InputStream in = new FileInputStream(src);
-	        OutputStream out = new FileOutputStream(dst);
-	    
-	        // Transfer bytes from in to out
-	        byte[] buf = new byte[1024];
-	        int len;
-	        
-	        while ((len = in.read(buf)) > 0) {
-	            out.write(buf, 0, len);
-	        }
-	        
-	        in.close();
-	        out.close();
-	        
-	        log("Minimizing " + dst.getAbsolutePath());
-    	}
-    }
-    
-    /**
-     * Deletes specified file
-     * @param file
-     */
-    public void deleteFile(File file) {
-    	
-    	file.delete();
-    	
-    }
     
    /**
      * Returns the output filename, adds .min.js as suffix attribute is set to true.
@@ -177,7 +174,7 @@ public class JSMin_Task extends Task {
 
     	if (this.suffix == true) {
 
-        	// Construct name of ouput file, just add th .min before the last .
+        	// Construct name of output file, just add the .min before the last .
         	outputFile = inputFile.substring(0,inputFile.lastIndexOf("."));
         	outputFile = outputFile + ".min";
         	outputFile = outputFile + inputFile.substring(inputFile.lastIndexOf("."), inputFile.length());
@@ -201,7 +198,7 @@ public class JSMin_Task extends Task {
         // If destdir has been set then use it
     	if (this.destdir != null) {
 
-    		outputDirectory = new File(this.destdir);
+    		outputDirectory = this.destdir;
 
     		// If destdir doesn't exist then create it...
     		if (!outputDirectory.isDirectory()) {
@@ -236,7 +233,7 @@ public class JSMin_Task extends Task {
     	if (this.srcfile != null) {
 
     		// Call JSMin class with src file passed through
-    		callJsMin(this.srcfile);
+    		callJsMin(this.srcfile, this.destfile);
 
     	// Otherwise if there is a fileset ...
     	} else if (filesets.size() != 0) {
@@ -263,7 +260,7 @@ public class JSMin_Task extends Task {
         			File temp = new File(dir,srcs[j]);
 
         			// Call the JSMin class with this file
-        			callJsMin(temp.getAbsolutePath());
+        			callJsMin(temp, null);
             	 }
             }
 
