@@ -214,7 +214,12 @@ public class JSMin {
 			
 		case 3:
 			theB = next();
-			if (theB == '/' && (theA == '(' || theA == ',' || theA == '='|| theA == ':')) {
+			if (theB == '/' && (theA == '(' || theA == ',' || theA == '=' ||
+                    			theA == ':' || theA == '[' || theA == '!' || 
+                    			theA == '&' || theA == '|' || theA == '?' || 
+                    			theA == '{' || theA == '}' || theA == ';' || 
+                    			theA == '\n')) {
+               
 				out.write(theA);
 				out.write(theB);
 				for (;;) {

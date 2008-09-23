@@ -38,6 +38,7 @@ public class JSMin_Task extends Task {
 	private File srcfile;
 	private File destdir;
 	private File destfile;
+	private String copyright;
 	private boolean suffix;
 	private boolean force = false;
 
@@ -51,6 +52,14 @@ public class JSMin_Task extends Task {
 		}
 	}
 
+	/**
+	 * Recieves copyright attribute from the ant task
+	 * @param copyright
+	 */
+	public void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+	
 	/**
 	 * Receives the destdir attribute from the ant task.
 	 * @param destdir
@@ -122,10 +131,16 @@ public class JSMin_Task extends Task {
         	FileInputStream inputStream = new FileInputStream(srcFile);
         	FileOutputStream outputStream = new FileOutputStream(tmpFile);
 
+        	// Drop in copyright notice
+    		if (this.copyright != null) {
+    			String copyrightString = "/* " + this.copyright + " */";
+    			outputStream.write(copyrightString.getBytes());
+    		}
+        	
         	// Invoke JSMin, passing params through as file input and output streams
         	JSMin jsmin = new JSMin(inputStream, outputStream);
     		jsmin.jsmin();
-
+    		
     		// Close file streams
     		inputStream.close();
     		outputStream.close();
