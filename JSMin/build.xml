@@ -59,7 +59,7 @@
 	</target>
 
 	<target name="test" description="Test fileset"
-		depends="init-test, test-fileset, test-copyright, test-prototype, test-jquery, test-destfile, test-noforce, test-force"/>
+		depends="init-test, test-fileset, test-copyright, test-prototype, test-jquery, test-destfile, test-noforce, test-force, test-custom-suffix"/>
 
 	<target name="test-fileset">
 
@@ -69,6 +69,10 @@
 
 	</target>
 
+	<target name="test-custom-suffix">
+		<jsmin srcfile="${test.dir}/popup.js" destdir="${output.dir}" suffix="true" suffixvalue="-foobar"/>
+	</target>
+	
 	<target name="test-destfile">
 
 		<jsmin srcfile="${test.dir}/popup.js" destfile="${output.dir}/test-destfile.js"/>

@@ -40,6 +40,7 @@ public class JSMin_Task extends Task {
 	private File destfile;
 	private String copyright;
 	private boolean suffix;
+	private String suffixValue = ".min";
 	private boolean force = false;
 
 	/**
@@ -99,6 +100,14 @@ public class JSMin_Task extends Task {
     public void setSuffix(boolean suffix) {
     	this.suffix = suffix;
     }
+
+	/**
+	 * Set a custom suffix value
+	 * @param suffixValue
+	 */
+	public void setSuffixvalue(String suffixValue) {
+		this.suffixValue = suffixValue;
+	}
 
     /**
      * Calls the JSMin class using the file parameter. First outputs to a temp file and then
@@ -176,7 +185,7 @@ public class JSMin_Task extends Task {
 
         	// Construct name of output file, just add the .min before the last .
         	outputFile = inputFile.substring(0,inputFile.lastIndexOf("."));
-        	outputFile = outputFile + ".min";
+        	outputFile = outputFile + this.suffixValue;
         	outputFile = outputFile + inputFile.substring(inputFile.lastIndexOf("."), inputFile.length());
 
     	}  else {
